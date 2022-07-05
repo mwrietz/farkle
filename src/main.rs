@@ -72,7 +72,7 @@ fn menu(dice: &mut Vec<Die>) {
         ];
         let keys = vec!["a", "b", "c", "d", "e", "f", "k", "r", "q"];
 
-        let selection = i_o::menu_horiz(&keys, &menu_items);
+        let selection = i_o::menu_horiz_blue(&keys, &menu_items);
 
         match selection {
             'a' => select(&mut dice[0]),
