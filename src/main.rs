@@ -5,18 +5,29 @@
 use rand::Rng;
 use std::process;
 use colored::Colorize;
-use crossterm::{cursor, execute};
-use std::io::stdout;
+//use crossterm::{cursor, execute};
+//use std::io::stdout;
 
 const ALL: u8 = 0;
 const ACTIVE: u8 = 1;
 const INACTIVE: u8 = 2;
 const SELECTED: u8 = 3; 
 
-const Y_ALL: u16 = 10;
-const Y_ACTIVE: u16 = 16;
-const Y_SELECTED: u16 = 22;
-const Y_INACTIVE: u16 = 28;
+const X_ALL: u16 = 0;
+const Y_ALL: u16 = 9;
+const X_ACTIVE: u16 = 0;
+const Y_ACTIVE: u16 = 15;
+const X_SELECTED: u16 = 36;
+const Y_SELECTED: u16 = 9;
+const X_INACTIVE: u16 = 36;
+const Y_INACTIVE: u16 = 15;
+const STATUS_WIDTH: u16 = 33;
+const STATUS_HEIGHT: u16 = 5;
+
+const X_FARKLE: u16 = 0;
+const Y_FARKLE: u16 = 22;
+const FARKLE_WIDTH: u16 = 69;
+const FARKLE_HEIGHT: u16 = 6;
 
 struct Die {
     value: u16,
@@ -80,7 +91,7 @@ fn menu(dice: &mut Vec<Die>) {
                 update_status_window(dice, ACTIVE);
                 update_status_window(dice, INACTIVE);
                 // display score_tot in INACTIVE status window
-                i_o::cmove(2, Y_INACTIVE + 2);
+                i_o::cmove(X_INACTIVE + 2, Y_INACTIVE + 2);
                 print!("score: {}    ", score_tot);
             }
             'r' => {
@@ -145,8 +156,8 @@ fn count_values(dice: &mut Vec<Die>, set: u8) -> Vec<usize> {
 
 fn display_boundary(die: &Die, label_color: String) {
     i_o::window(&i_o::Window {
-        x: die.position * 9,
-        y: 4,
+        x: die.position * 12,
+        y: 3,
         w: 9,
         h: 4,
         title: format!("{}", die.label),
@@ -155,8 +166,8 @@ fn display_boundary(die: &Die, label_color: String) {
 }
 
 fn display_face(die: &Die) {
-    let x = die.position * 9;
-    let y: u16 = 4;
+    let x = die.position * 12;
+    let y: u16 = 3;
     let mut row1 = String::from("");
     let mut row2 = String::from("");
     let mut row3 = String::from("");
@@ -230,46 +241,46 @@ fn draw_single_select(die: &Die) {
 fn draw_status_window(set: u8) {
     if set == ALL {
         i_o::window(&i_o::Window {
-            x: 0,
+            x: X_ALL,
             y: Y_ALL,
-            w: 35,
-            h: 5,
+            w: STATUS_WIDTH,
+            h: STATUS_HEIGHT,
             title: format!("{}", "All Dice"),
             title_color: "white".to_string(),
         });
     }
     if set == INACTIVE {
         i_o::window(&i_o::Window {
-            x: 0,
+            x: X_INACTIVE,
             y: Y_INACTIVE,
-            w: 35,
-            h: 5,
+            w: STATUS_WIDTH,
+            h: STATUS_HEIGHT,
             title: format!("{}", "Inactive Dice"),
             title_color: "red".to_string(),
         });
     }
     if set == ACTIVE {
         i_o::window(&i_o::Window {
-            x: 0,
+            x: X_ACTIVE,
             y: Y_ACTIVE,
-            w: 35,
-            h: 5,
+            w: STATUS_WIDTH,
+            h: STATUS_HEIGHT,
             title: format!("{}", "Active Dice"),
             title_color: "green".to_string(),
         });
     }
     if set == SELECTED {
         i_o::window(&i_o::Window {
-            x: 0,
+            x: X_SELECTED,
             y: Y_SELECTED,
-            w: 35,
-            h: 5,
+            w: STATUS_WIDTH,
+            h: STATUS_HEIGHT,
             title: format!("{}", "Selected Dice"),
             title_color: "blue".to_string(),
         });
     }
 }
-
+/*
 fn farkle(line1: &str, line2: &str) {
     let (width, height) = i_o::tsize();
     let line1_length: u16 = line1.len() as u16;
@@ -292,6 +303,30 @@ fn farkle(line1: &str, line2: &str) {
     i_o::cmove(0, height - 2);
 
     execute!(stdout(), cursor::Show).unwrap();
+}
+*/
+
+fn farkle() {
+
+    let (_width, height) = i_o::tsize();
+
+    i_o::window(&i_o::Window {
+        x: X_FARKLE,
+        y: Y_FARKLE,
+        w: FARKLE_WIDTH,
+        h: FARKLE_HEIGHT,
+        title: format!("{}", "F A R K L E"),
+        title_color: "red".to_string(),
+    });
+
+    i_o::cmove(X_FARKLE + 1, Y_FARKLE + 3);
+    print!("{}", "                    * * *  S c o r e = 0  * * *".bold().red());
+
+    // move to bottom of screen and clear menu
+    i_o::cmove(0, height - 1);
+    print!("                                                                                ");
+    i_o::cmove(0, height - 2);
+
 }
 
 fn initial_roll(dice: &mut Vec<Die>) {
@@ -374,7 +409,8 @@ fn roll_unselected(dice: &mut Vec<Die>) {
         }
     }
     if score(dice, ACTIVE) == 0 {
-        farkle("F A R K L E", "* * *  S c o r e = 0  * * *");
+        //farkle("F A R K L E", "* * *  S c o r e = 0  * * *");
+        farkle();
         process::exit(1);
     }
 }
@@ -459,88 +495,86 @@ fn score(dice: &mut Vec<Die>, set: u8) -> u16 {
 
 fn update_status_window(dice: &mut Vec<Die>, set: u8) {
 
+    let mut x = 0;
     let mut y = 0;
     let mut counts: Vec<usize> = Vec::new();
 
     if set == ALL {
+        x = X_ALL + 2;
         y = Y_ALL + 1;
         counts = count_values(dice, ALL);
     }
     if set == ACTIVE {
+        x = X_ACTIVE + 2;
         y = Y_ACTIVE + 1;
         counts = count_values(dice, ACTIVE);
     }
     if set == INACTIVE {
+        x = X_INACTIVE + 2;
         y = Y_INACTIVE + 1;
         counts = count_values(dice, INACTIVE);
     }
     if set == SELECTED {
+        x = X_SELECTED + 2;
         y = Y_SELECTED + 1;
         counts = count_values(dice, SELECTED);
     }
 
     // clear status window
-    i_o::cmove(2, y);
+    i_o::cmove(x, y);
     print!("                      ");
     y += 1;
-    i_o::cmove(2, y);
+    i_o::cmove(x, y);
     print!("                      ");
     y += 1;
-    i_o::cmove(2, y);
+    i_o::cmove(x, y);
     print!("                      ");
 
     y -= 2;
 
-    i_o::cmove(2, y);
+    i_o::cmove(x, y);
     //print!("count: {:?}", counts);
     print_count(&counts); 
     y += 1;
 
     if set == SELECTED {
-        i_o::cmove(2, y);
+        i_o::cmove(x, y);
         print!("score: {}    ", score(dice, SELECTED));
         y += 1;
     }
-    /*
-    if set == INACTIVE {
-        i_o::cmove(2, y);
-        print!("score: {}    ", score(dice, INACTIVE));
-        y += 1;
-    }
-    */
 
     // six of a kind
     let mut freq = counts.iter().filter(|&n| *n == 6).count();
     if freq == 1 {
-        i_o::cmove(2, y);
+        i_o::cmove(x, y);
         print!("six of a kind");
         y += 1;
     }
     // five of a kind
     freq = counts.iter().filter(|&n| *n == 5).count();
     if freq == 1 {
-        i_o::cmove(2, y);
+        i_o::cmove(x, y);
         print!("five of a kind");
         y += 1;
     }
     // four of a kind
     freq = counts.iter().filter(|&n| *n == 4).count();
     if freq == 1 {
-        i_o::cmove(2, y);
+        i_o::cmove(x, y);
         print!("four of a kind");
         y += 1;
     }
     // triplets
     freq = counts.iter().filter(|&n| *n == 3).count();
     if freq > 0 {
-        i_o::cmove(2, y);
+        i_o::cmove(x, y);
         print!("triplets: {}", freq);
         y += 1;
     }
     // pairs
     freq = counts.iter().filter(|&n| *n == 2).count();
     if freq > 0 {
-        i_o::cmove(2, y);
+        i_o::cmove(x, y);
         print!("pairs: {}", freq);
     }
 }
