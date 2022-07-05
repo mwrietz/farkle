@@ -5,8 +5,6 @@
 use rand::Rng;
 use std::process;
 use colored::Colorize;
-//use crossterm::{cursor, execute};
-//use std::io::stdout;
 
 const ALL: u8 = 0;
 const ACTIVE: u8 = 1;
@@ -27,7 +25,7 @@ const STATUS_HEIGHT: u16 = 5;
 const X_FARKLE: u16 = 0;
 const Y_FARKLE: u16 = 22;
 const FARKLE_WIDTH: u16 = 69;
-const FARKLE_HEIGHT: u16 = 6;
+const FARKLE_HEIGHT: u16 = 2;
 
 struct Die {
     value: u16,
@@ -280,31 +278,6 @@ fn draw_status_window(set: u8) {
         });
     }
 }
-/*
-fn farkle(line1: &str, line2: &str) {
-    let (width, height) = i_o::tsize();
-    let line1_length: u16 = line1.len() as u16;
-    i_o::cmove(width / 2 - line1_length / 2, height / 2 - 1);
-    println!("{}", line1.bold());
-
-    let line2_length: u16 = line2.len() as u16;
-    i_o::cmove(width / 2 - line2_length / 2, height / 2 + 1);
-    println!("{}", line2);
-
-    execute!(stdout(), cursor::Hide).unwrap();
-
-    // pause for splash screen
-    let dur = std::time::Duration::new(2, 0);
-    std::thread::sleep(dur);
-
-    // move to bottom of screen and clear menu
-    i_o::cmove(0, height - 1);
-    print!("                                                                                ");
-    i_o::cmove(0, height - 2);
-
-    execute!(stdout(), cursor::Show).unwrap();
-}
-*/
 
 fn farkle() {
 
@@ -319,7 +292,7 @@ fn farkle() {
         title_color: "red".to_string(),
     });
 
-    i_o::cmove(X_FARKLE + 1, Y_FARKLE + 3);
+    i_o::cmove(X_FARKLE + 1, Y_FARKLE + 1);
     print!("{}", "                    * * *  S c o r e = 0  * * *".bold().red());
 
     // move to bottom of screen and clear menu
@@ -409,7 +382,6 @@ fn roll_unselected(dice: &mut Vec<Die>) {
         }
     }
     if score(dice, ACTIVE) == 0 {
-        //farkle("F A R K L E", "* * *  S c o r e = 0  * * *");
         farkle();
         process::exit(1);
     }
@@ -533,7 +505,6 @@ fn update_status_window(dice: &mut Vec<Die>, set: u8) {
     y -= 2;
 
     i_o::cmove(x, y);
-    //print!("count: {:?}", counts);
     print_count(&counts); 
     y += 1;
 
