@@ -1,0 +1,12 @@
+[package]
+name = "farkle"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+crossterm = "0.23.2"
+colored = "2"
+rand = "0.7.3"
+i_o = { path = "../i_o" }
