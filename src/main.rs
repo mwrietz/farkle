@@ -11,19 +11,19 @@ const ACTIVE: u8 = 1;
 const INACTIVE: u8 = 2;
 const SELECTED: u8 = 3; 
 
-const X_ALL: u16 = 0;
-const Y_ALL: u16 = 9;
-const X_ACTIVE: u16 = 0;
-const Y_ACTIVE: u16 = 15;
-const X_SELECTED: u16 = 36;
-const Y_SELECTED: u16 = 9;
-const X_INACTIVE: u16 = 36;
-const Y_INACTIVE: u16 = 15;
+const X_ALL: u16 = 5;
+const Y_ALL: u16 = 10;
+const X_ACTIVE: u16 = 5;
+const Y_ACTIVE: u16 = 16;
+const X_SELECTED: u16 = 41;
+const Y_SELECTED: u16 = 10;
+const X_INACTIVE: u16 = 41;
+const Y_INACTIVE: u16 = 16;
 const STATUS_WIDTH: u16 = 33;
 const STATUS_HEIGHT: u16 = 5;
 
-const X_FARKLE: u16 = 0;
-const Y_FARKLE: u16 = 22;
+const X_FARKLE: u16 = 5;
+const Y_FARKLE: u16 = 23;
 const FARKLE_WIDTH: u16 = 69;
 const FARKLE_HEIGHT: u16 = 2;
 
@@ -37,7 +37,7 @@ struct Die {
 
 fn main() {
     i_o::cls();
-    i_o::print_title("Farkle");
+    i_o::print_title_blue("Farkle");
 
     let mut dice = Vec::new();
 
@@ -154,8 +154,8 @@ fn count_values(dice: &mut Vec<Die>, set: u8) -> Vec<usize> {
 
 fn display_boundary(die: &Die, label_color: String) {
     i_o::window(&i_o::Window {
-        x: die.position * 12,
-        y: 3,
+        x: 5 + die.position*12,
+        y: 4,
         w: 9,
         h: 4,
         title: format!("{}", die.label),
@@ -164,8 +164,8 @@ fn display_boundary(die: &Die, label_color: String) {
 }
 
 fn display_face(die: &Die) {
-    let x = die.position * 12;
-    let y: u16 = 3;
+    let x = 5 + die.position*12;
+    let y: u16 = 4;
     let mut row1 = String::from("");
     let mut row2 = String::from("");
     let mut row3 = String::from("");
