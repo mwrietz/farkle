@@ -33,9 +33,9 @@ const Y_MAINSTATUS: u16 = 14;
 const MAINSTATUS_WIDTH: u16 = 75;
 const MAINSTATUS_HEIGHT: u16 = 15;
 
-const X_FARKLE: u16 = 5;
-const Y_FARKLE: u16 = 23;
-const FARKLE_WIDTH: u16 = 69;
+const X_FARKLE: u16 = 3;
+const Y_FARKLE: u16 = 18;
+const FARKLE_WIDTH: u16 = 73;
 const FARKLE_HEIGHT: u16 = 2;
 
 struct Die {
@@ -46,11 +46,20 @@ struct Die {
     selected: bool,
 }
 
+struct Data {
+    score: u16,
+    roll_count: u16,
+}
+
 fn main() {
     i_o::cls();
     i_o::print_title_blue("Farkle");
 
     let mut dice = Vec::new();
+    let mut data = Data {
+        score: 0,
+        roll_count: 0,
+    };
 
     draw_status_window(DICE);
     draw_status_window(MAINSTATUS);
@@ -59,20 +68,25 @@ fn main() {
     draw_status_window(INACTIVE);
     draw_status_window(SELECTED);
 
-    initial_roll(&mut dice);
+    initial_roll(&mut dice, &mut data);
     draw_all(&mut dice);
 
-    update_status_window(&mut dice, ALL);
+    //update_status_window(&mut dice, ALL);
+    update_roll_count(data.roll_count);
+
     update_status_window(&mut dice, ACTIVE);
     update_status_window(&mut dice, INACTIVE);
     update_status_window(&mut dice, SELECTED);
     //count_values(&mut dice, ALL);
 
-    menu(&mut dice);
+    menu(&mut dice, &mut data);
 }
 
-fn menu(dice: &mut Vec<Die>) {
-    let mut score_tot: u16 = 0;
+fn menu(dice: &mut Vec<Die>, data: &mut Data) {
+    //let mut score_tot: u16 = 0;
+    data.score = 0;
+    //let mut roll_count: u16 = 1;
+    data.roll_count = 1;
     loop {
         let menu_items = vec![
             "Sel",
@@ -97,18 +111,20 @@ fn menu(dice: &mut Vec<Die>) {
             'e' => select(&mut dice[4]),
             'f' => select(&mut dice[5]),
             'k' => {
-                score_tot += score(dice, SELECTED);
-                keep_selected(dice);
+                data.score += score(dice, SELECTED);
+                keep_selected(dice, data);
                 draw_all(dice);
                 update_status_window(dice, SELECTED);
                 update_status_window(dice, ACTIVE);
                 update_status_window(dice, INACTIVE);
                 // display score_tot in INACTIVE status window
                 i_o::cmove(X_INACTIVE + 2, Y_INACTIVE + 2);
-                print!("score: {}    ", score_tot);
+                print!("score: {}    ", data.score);
             }
             'r' => {
-                roll_unselected(dice);
+                roll_unselected(dice, data);
+                //data.roll_count += 1;
+                //update_roll_count(data.roll_count);
                 //update_status_window(dice, ALL);
                 //count_values(dice, ALL);
             }
@@ -325,7 +341,7 @@ fn farkle() {
         y: Y_FARKLE,
         w: FARKLE_WIDTH,
         h: FARKLE_HEIGHT,
-        title: format!("{}", "F A R K L E"),
+        title: format!("{}", "* * * F A R K L E * * *"),
         title_color: "red".to_string(),
     });
 
@@ -339,7 +355,7 @@ fn farkle() {
 
 }
 
-fn initial_roll(dice: &mut Vec<Die>) {
+fn initial_roll(dice: &mut Vec<Die>, data: &mut Data) {
     // setup dice
     let mut rng = rand::thread_rng();
     let n_dice = 6;
@@ -364,10 +380,10 @@ fn initial_roll(dice: &mut Vec<Die>) {
         dice[i].label = format!("{:?}", ((i as u8) + 97) as char);
     }
 
-    roll_unselected(dice);
+    roll_unselected(dice, data);
 }
 
-fn keep_selected(dice: &mut Vec<Die>) {
+fn keep_selected(dice: &mut Vec<Die>, data: &mut Data) {
     // make selected inactive
     for i in 0..dice.len() {
         if dice[i].selected == true {
@@ -398,7 +414,7 @@ fn keep_selected(dice: &mut Vec<Die>) {
         for i in 0..dice.len() {
             dice[i].active = true;
         }
-        roll_unselected(dice);
+        roll_unselected(dice, data);
     }
 }
 
@@ -410,7 +426,7 @@ fn print_count(counts: &Vec<usize>) {
     print!("{}]", counts[counts.len()-1]);
 }
 
-fn roll_unselected(dice: &mut Vec<Die>) {
+fn roll_unselected(dice: &mut Vec<Die>, data: &mut Data) {
     let mut rng = rand::thread_rng();
     for i in 0..dice.len() {
         if dice[i].active == true && dice[i].selected == false {
@@ -418,6 +434,9 @@ fn roll_unselected(dice: &mut Vec<Die>) {
             draw_single(&dice[i]);
         }
     }
+    data.roll_count += 1;
+    update_roll_count(data.roll_count);
+
     if score(dice, ACTIVE) == 0 {
         farkle();
         process::exit(1);
@@ -586,6 +605,11 @@ fn update_status_window(dice: &mut Vec<Die>, set: u8) {
             print!("pairs: {}", freq);
         }
     }
+}
+
+fn update_roll_count(count: u16) {
+    i_o::cmove(X_ALL + 2, Y_ALL + 1);
+    print!("rolls: {}    ", count);
 }
 
 fn usage() {
