@@ -71,21 +71,17 @@ fn main() {
     initial_roll(&mut dice, &mut data);
     draw_all(&mut dice);
 
-    //update_status_window(&mut dice, ALL);
     update_roll_count(data.roll_count);
 
     update_status_window(&mut dice, ACTIVE);
     update_status_window(&mut dice, INACTIVE);
     update_status_window(&mut dice, SELECTED);
-    //count_values(&mut dice, ALL);
 
     menu(&mut dice, &mut data);
 }
 
 fn menu(dice: &mut Vec<Die>, data: &mut Data) {
-    //let mut score_tot: u16 = 0;
     data.score = 0;
-    //let mut roll_count: u16 = 1;
     data.roll_count = 1;
     loop {
         let menu_items = vec![
@@ -123,10 +119,6 @@ fn menu(dice: &mut Vec<Die>, data: &mut Data) {
             }
             'r' => {
                 roll_unselected(dice, data);
-                //data.roll_count += 1;
-                //update_roll_count(data.roll_count);
-                //update_status_window(dice, ALL);
-                //count_values(dice, ALL);
             }
             'q' => {
                 process::exit(1);
@@ -530,7 +522,6 @@ fn update_status_window(dice: &mut Vec<Die>, set: u8) {
     if set == ALL {
         x = X_ALL + 2;
         y = Y_ALL + 1;
-        //counts = count_values(dice, ALL);
     }
     if set == ACTIVE {
         x = X_ACTIVE + 2;
