@@ -226,15 +226,15 @@ fn display_face(die: &Die) {
     print!("{}", row3);
 }
 
-fn draw_all(dv: &mut Vec<Die>) {
-    let l = dv.len();
+fn draw_all(dice: &mut Vec<Die>) {
+    let l = dice.len();
     for i in 0..l {
-        if dv[i].active == false {
-            display_boundary(&dv[i], "red".to_string());
+        if dice[i].active == false {
+            display_boundary(&dice[i], "red".to_string());
         } else {
-            display_boundary(&dv[i], "green".to_string());
+            display_boundary(&dice[i], "green".to_string());
         }
-        display_face(&dv[i]);
+        display_face(&dice[i]);
     }
 }
 
