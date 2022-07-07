@@ -240,10 +240,18 @@ fn draw_all(dice: &mut Vec<Die>) {
 }
 
 fn draw_single(die: &Die) {
-    display_boundary(&die, "green".to_string());
+    //display_boundary(&die, "green".to_string());
+    //display_face(&die);
+    if die.selected == true {
+        display_boundary(&die, "blue".to_string());
+    }
+    else {
+        display_boundary(&die, "green".to_string());
+    }
     display_face(&die);
-}
 
+}
+/*
 fn draw_single_select(die: &Die) {
     if die.selected == true {
         display_boundary(&die, "blue".to_string());
@@ -253,7 +261,7 @@ fn draw_single_select(die: &Die) {
     }
     display_face(&die);
 }
-
+*/
 fn draw_status_window(set: u8) {
     if set == DICE {
         i_o::window(&i_o::Window {
@@ -445,7 +453,8 @@ fn select(die: &mut Die) {
         } else {
             die.selected = false;
         }
-        draw_single_select(&die);
+        //draw_single_select(&die);
+        draw_single(&die);
     }
     draw_status_window(SELECTED);
 }
