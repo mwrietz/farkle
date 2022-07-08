@@ -1,42 +1,15 @@
-// farkle
-// 20220704
-// m.w.rietz
-
 use colored::Colorize;
 use rand::Rng;
 use std::process;
 
-const ALL: u8 = 0;
-const ACTIVE: u8 = 1;
-const INACTIVE: u8 = 2;
-const SELECTED: u8 = 3;
-const MAINSTATUS: u8 = 4;
-const DICE: u8 = 5;
+// status windows
+const TURN_STATUS: u8 = 2;
+const ACTIVE: u8 = 3;
+const INACTIVE: u8 = 4;
+const SELECTED: u8 = 5;
 
-const X_ALL: u16 = 5;
-const Y_ALL: u16 = 16;
-const X_ACTIVE: u16 = 5;
-const Y_ACTIVE: u16 = 22;
-const X_SELECTED: u16 = 41;
-const Y_SELECTED: u16 = 16;
-const X_INACTIVE: u16 = 41;
-const Y_INACTIVE: u16 = 22;
-const STATUS_WIDTH: u16 = 33;
-const STATUS_HEIGHT: u16 = 5;
-
-const X_DICE: u16 = 2;
-const Y_DICE: u16 = 4;
-const DICE_WIDTH: u16 = 75;
-const DICE_HEIGHT: u16 = 8;
-const X_MAINSTATUS: u16 = 2;
-const Y_MAINSTATUS: u16 = 14;
-const MAINSTATUS_WIDTH: u16 = 75;
-const MAINSTATUS_HEIGHT: u16 = 15;
-
-const X_FARKLE: u16 = 3;
-const Y_FARKLE: u16 = 18;
-const FARKLE_WIDTH: u16 = 73;
-const FARKLE_HEIGHT: u16 = 3;
+const WIDTH_STATUS: u16 = 33;
+const HEIGHT_STATUS: u16 = 5;
 
 struct Die {
     value: u16,
@@ -55,32 +28,28 @@ fn main() {
     i_o::cls();
     i_o::print_title_blue("Farkle");
 
+    let mut ui = Vec::new();
+    ui_setup(&mut ui);
+    ui_display(&ui);
+
     let mut dice = Vec::new();
     let mut data = Data {
         score: 0,
         roll_count: 0,
     };
 
-    draw_status_window(DICE);
-    draw_status_window(MAINSTATUS);
-    draw_status_window(ALL);
-    draw_status_window(ACTIVE);
-    draw_status_window(INACTIVE);
-    draw_status_window(SELECTED);
-
     initial_roll(&mut dice, &mut data);
     draw_all(&mut dice);
 
-    update_roll_count(data.roll_count);
+    update_status_window(&mut dice, &mut data, &ui, TURN_STATUS);
+    update_status_window(&mut dice, &mut data, &ui, ACTIVE);
+    update_status_window(&mut dice, &mut data, &ui, INACTIVE);
+    update_status_window(&mut dice, &mut data, &ui, SELECTED);
 
-    update_status_window(&mut dice, ACTIVE);
-    update_status_window(&mut dice, INACTIVE);
-    update_status_window(&mut dice, SELECTED);
-
-    menu(&mut dice, &mut data);
+    menu(&mut dice, &mut data, &ui);
 }
 
-fn menu(dice: &mut Vec<Die>, data: &mut Data) {
+fn menu(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Frame>) {
     data.score = 0;
     data.roll_count = 1;
     loop {
@@ -102,23 +71,22 @@ fn menu(dice: &mut Vec<Die>, data: &mut Data) {
                 data.score += score(dice, SELECTED);
                 keep_selected(dice, data);
                 draw_all(dice);
-                update_status_window(dice, SELECTED);
-                update_status_window(dice, ACTIVE);
-                update_status_window(dice, INACTIVE);
-                // display score_tot in INACTIVE status window
-                i_o::cmove(X_INACTIVE + 2, Y_INACTIVE + 2);
-                print!("score: {}    ", data.score);
+                update_status_window(dice, data, ui, TURN_STATUS);
+                update_status_window(dice, data, ui, SELECTED);
+                update_status_window(dice, data, ui, ACTIVE);
+                update_status_window(dice, data, ui, INACTIVE);
             }
             'r' => {
                 roll_unselected(dice, data);
-                update_status_window(dice, ACTIVE);
+                update_status_window(dice, data, ui, TURN_STATUS);
+                update_status_window(dice, data, ui, ACTIVE);
             }
             'q' => {
                 process::exit(1);
             }
             _ => usage(),
         }
-        update_status_window(dice, SELECTED);
+        update_status_window(dice, data, ui, SELECTED);
     }
 }
 
@@ -159,11 +127,6 @@ fn count_values(dice: &mut Vec<Die>, set: u8) -> Vec<usize> {
                     }
                 }
             }
-            if set == ALL {
-                if dice[i].value == j {
-                    counts[j as usize] += 1;
-                }
-            }
         }
     }
 
@@ -171,14 +134,16 @@ fn count_values(dice: &mut Vec<Die>, set: u8) -> Vec<usize> {
 }
 
 fn display_boundary(die: &Die, label_color: String) {
-    i_o::window(&i_o::Window {
+    let frm = i_o::Frame {
+        title: format!("{}", die.label),
+        title_color: label_color,
         x: 5 + die.position * 12,
         y: 6,
         w: 9,
         h: 4,
-        title: format!("{}", die.label),
-        title_color: label_color,
-    });
+    };
+
+    frm.display();
 }
 
 fn display_face(die: &Die) {
@@ -228,116 +193,47 @@ fn display_face(die: &Die) {
 }
 
 fn draw_all(dice: &mut Vec<Die>) {
-    let l = dice.len();
-    for i in 0..l {
-        if dice[i].active == false {
-            display_boundary(&dice[i], "red".to_string());
-        } else {
-            display_boundary(&dice[i], "green".to_string());
-        }
-        display_face(&dice[i]);
+    for i in 0..dice.len() {
+        draw_single(&dice[i]);
     }
 }
 
 fn draw_single(die: &Die) {
-    if die.selected == true {
-        display_boundary(&die, "blue".to_string());
-    }
-    else {
-        display_boundary(&die, "green".to_string());
+    if die.active == true {
+        if die.selected == true {
+            display_boundary(&die, "blue".to_string());
+        } else {
+            display_boundary(&die, "green".to_string());
+        }
+    } else {
+        display_boundary(&die, "red".to_string());
     }
     display_face(&die);
-
-}
-
-fn draw_status_window(set: u8) {
-    if set == DICE {
-        i_o::window(&i_o::Window {
-            x: X_DICE,
-            y: Y_DICE,
-            w: DICE_WIDTH,
-            h: DICE_HEIGHT,
-            title: format!("{}", "Dice"),
-            title_color: "white".to_string(),
-        });
-    }
-    if set == MAINSTATUS {
-        i_o::window(&i_o::Window {
-            x: X_MAINSTATUS,
-            y: Y_MAINSTATUS,
-            w: MAINSTATUS_WIDTH,
-            h: MAINSTATUS_HEIGHT,
-            title: format!("{}", "Status"),
-            title_color: "white".to_string(),
-        });
-    }
-    if set == ALL {
-        i_o::window(&i_o::Window {
-            x: X_ALL,
-            y: Y_ALL,
-            w: STATUS_WIDTH,
-            h: STATUS_HEIGHT,
-            title: format!("{}", "Turn Status"),
-            title_color: "white".to_string(),
-        });
-    }
-    if set == INACTIVE {
-        i_o::window(&i_o::Window {
-            x: X_INACTIVE,
-            y: Y_INACTIVE,
-            w: STATUS_WIDTH,
-            h: STATUS_HEIGHT,
-            title: format!("{}", "Inactive (Scored) Dice"),
-            title_color: "red".to_string(),
-        });
-    }
-    if set == ACTIVE {
-        i_o::window(&i_o::Window {
-            x: X_ACTIVE,
-            y: Y_ACTIVE,
-            w: STATUS_WIDTH,
-            h: STATUS_HEIGHT,
-            title: format!("{}", "Active Dice"),
-            title_color: "green".to_string(),
-        });
-    }
-    if set == SELECTED {
-        i_o::window(&i_o::Window {
-            x: X_SELECTED,
-            y: Y_SELECTED,
-            w: STATUS_WIDTH,
-            h: STATUS_HEIGHT,
-            title: format!("{}", "Selected Dice"),
-            title_color: "blue".to_string(),
-        });
-    }
 }
 
 fn farkle() {
     let (_width, height) = i_o::tsize();
 
-    i_o::window(&i_o::Window {
-        x: X_FARKLE,
-        y: Y_FARKLE,
-        w: FARKLE_WIDTH,
-        h: FARKLE_HEIGHT,
+    let frm = i_o::Frame {
         title: format!("{}", ""),
         title_color: "red".to_string(),
-    });
+        x: 3,
+        y: 18,
+        w: 73,
+        h: 3,
+    };
 
-    i_o::cmove(X_FARKLE + 1, Y_FARKLE + 1);
+    frm.display();
+
+    i_o::cmove(frm.x + 1, frm.y + 1);
     print!(
-        "{}",
-        "                    * * *  F A R K L E !  * * *"
-            .bold()
-            .red()
+        "                    {}",
+        "* * *  F A R K L E !  * * *".bold().red()
     );
-    i_o::cmove(X_FARKLE + 1, Y_FARKLE + 2);
+    i_o::cmove(frm.x + 1, frm.y + 2);
     print!(
-        "{}",
-        "                    * * *  S c o r e = 0  * * *"
-            .bold()
-            .red()
+        "                    {}",
+        "* * *  S c o r e = 0  * * *".bold().red()
     );
 
     // move to bottom of screen and clear menu
@@ -426,7 +322,6 @@ fn roll_unselected(dice: &mut Vec<Die>, data: &mut Data) {
         }
     }
     data.roll_count += 1;
-    update_roll_count(data.roll_count);
 
     if score(dice, ACTIVE) == 0 {
         farkle();
@@ -441,10 +336,8 @@ fn select(die: &mut Die) {
         } else {
             die.selected = false;
         }
-        //draw_single_select(&die);
         draw_single(&die);
     }
-    draw_status_window(SELECTED);
 }
 
 fn score(dice: &mut Vec<Die>, set: u8) -> u16 {
@@ -513,50 +406,36 @@ fn score(dice: &mut Vec<Die>, set: u8) -> u16 {
     score as u16
 }
 
-fn update_status_window(dice: &mut Vec<Die>, set: u8) {
-    let mut x = 0;
-    let mut y = 0;
-    let mut counts: Vec<usize> = Vec::new();
-
-    if set == ALL {
-        x = X_ALL + 2;
-        y = Y_ALL + 1;
-    }
-    if set == ACTIVE {
-        x = X_ACTIVE + 2;
-        y = Y_ACTIVE + 1;
-        counts = count_values(dice, ACTIVE);
-    }
-    if set == INACTIVE {
-        x = X_INACTIVE + 2;
-        y = Y_INACTIVE + 1;
-        counts = count_values(dice, INACTIVE);
-    }
-    if set == SELECTED {
-        x = X_SELECTED + 2;
-        y = Y_SELECTED + 1;
-        counts = count_values(dice, SELECTED);
-    }
+fn update_status_window(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Frame>, set: u8) {
+    let x = ui[set as usize].x + 2;
+    let mut y = ui[set as usize].y + 1;
+    let counts = count_values(dice, set);
 
     // clear status window
-    i_o::cmove(x, y);
-    print!("                      ");
-    y += 1;
-    i_o::cmove(x, y);
-    print!("                      ");
-    y += 1;
-    i_o::cmove(x, y);
-    print!("                      ");
-    y += 1;
-    i_o::cmove(x, y);
-    print!("                      ");
-    y -= 3;
+    for _ in 0..4 {
+        i_o::cmove(x, y);
+        print!("                      ");
+        y += 1;
+    }
+    y -= 4;
 
-    if set != ALL {
+    if set == TURN_STATUS {
+        i_o::cmove(x, y);
+        print!("rolls: {}    ", data.roll_count);
+    }
+
+    if set == SELECTED || set == ACTIVE || set == INACTIVE {
         i_o::cmove(x, y);
         print_count(&counts);
         y += 1;
+    }
 
+    if set == INACTIVE {
+        i_o::cmove(x, y);
+        print!("score: {}    ", data.score);
+    }
+
+    if set == SELECTED || set == ACTIVE {
         if set == SELECTED {
             i_o::cmove(x, y);
             print!("selected score: {}    ", score(dice, set));
@@ -605,9 +484,67 @@ fn update_status_window(dice: &mut Vec<Die>, set: u8) {
     }
 }
 
-fn update_roll_count(count: u16) {
-    i_o::cmove(X_ALL + 2, Y_ALL + 1);
-    print!("rolls: {}    ", count);
+fn ui_display(ui: &Vec<i_o::Frame>) {
+    for i in 0..ui.len() {
+        ui[i].display();
+    }
+}
+
+fn ui_setup(ui: &mut Vec<i_o::Frame>) {
+    // DICE: 0
+    ui.push(i_o::Frame {
+        title: "DICE".to_string(),
+        title_color: "white".to_string(),
+        x: 2,
+        y: 4,
+        w: 75,
+        h: 7,
+    });
+    // MAIN_STATUS: 1
+    ui.push(i_o::Frame {
+        title: "STATUS".to_string(),
+        title_color: "white".to_string(),
+        x: 2,
+        y: 13,
+        w: 75,
+        h: 14,
+    });
+    // TURN_STATUS: 2
+    ui.push(i_o::Frame {
+        title: "Turn Status".to_string(),
+        title_color: "white".to_string(),
+        x: 5,
+        y: 15,
+        w: WIDTH_STATUS,
+        h: HEIGHT_STATUS,
+    });
+    // ACTIVE: 3
+    ui.push(i_o::Frame {
+        title: "Active Dice".to_string(),
+        title_color: "green".to_string(),
+        x: 5,
+        y: 21,
+        w: WIDTH_STATUS,
+        h: HEIGHT_STATUS,
+    });
+    // INACTIVE: 4
+    ui.push(i_o::Frame {
+        title: "Inactive (Scored) Dice".to_string(),
+        title_color: "red".to_string(),
+        x: 41,
+        y: 21,
+        w: WIDTH_STATUS,
+        h: HEIGHT_STATUS,
+    });
+    // SELECTED: 5
+    ui.push(i_o::Frame {
+        title: "Selected Dice".to_string(),
+        title_color: "blue".to_string(),
+        x: 41,
+        y: 15,
+        w: WIDTH_STATUS,
+        h: HEIGHT_STATUS,
+    });
 }
 
 fn usage() {
