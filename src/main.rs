@@ -19,6 +19,61 @@ struct Die {
     selected: bool,
 }
 
+impl Die {
+
+    fn display_boundary(&self) {
+        let mut label_color = String::from("");
+        if self.active == true { label_color = "green".to_string(); }
+        if self.active == false { label_color = "red".to_string(); }
+        if self.selected == true { label_color = "blue".to_string(); }
+        let frm = i_o::Frame {
+            title: format!("{}", self.label),
+            title_color: label_color,
+            x: 5 + self.position * 12,
+            y: 6,
+            w: 9,
+            h: 4,
+        };
+        frm.display();
+    }
+
+    fn display_face(&self) {
+        let x = 5 + self.position * 12;
+        let y: u16 = 6;
+        let mut rows = Vec::new(); 
+        if self.value == 1 { rows = vec!["       ", "   *   ", "       "]; }
+        if self.value == 2 { rows = vec!["     * ", "       ", " *     "]; }
+        if self.value == 3 { rows = vec!["     * ", "   *   ", " *     "]; }
+        if self.value == 4 { rows = vec![" *   * ", "       ", " *   * "]; }
+        if self.value == 5 { rows = vec![" *   * ", "   *   ", " *   * "]; }
+        if self.value == 6 { rows = vec![" *   * ", " *   * ", " *   * "]; }
+
+        let mut line_count = 1;
+        for i in 0..3 {
+            i_o::cmove(x + 1, y + line_count);
+            print!("{}", rows[i]);
+            line_count += 1;
+        }
+    }
+
+    fn display_die(&self) {
+        self.display_boundary();
+        self.display_face();
+    }
+
+    fn select(&mut self) {
+        if self.active == true {
+            if self.selected == false {
+                self.selected = true;
+            } else {
+                self.selected = false;
+            }
+            self.display_die();
+        }
+    }
+
+}
+
 struct Data {
     score: u16,
     roll_count: u16,
@@ -39,7 +94,7 @@ fn main() {
     };
 
     initial_roll(&mut dice, &mut data);
-    draw_all(&mut dice);
+    display_dice(&mut dice);
 
     update_status_window(&mut dice, &mut data, &ui, TURN_STATUS);
     update_status_window(&mut dice, &mut data, &ui, ACTIVE);
@@ -61,16 +116,16 @@ fn menu(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Frame>) {
         let selection = i_o::menu_horiz_blue(&keys, &menu_items);
 
         match selection {
-            'a' => select(&mut dice[0]),
-            'b' => select(&mut dice[1]),
-            'c' => select(&mut dice[2]),
-            'd' => select(&mut dice[3]),
-            'e' => select(&mut dice[4]),
-            'f' => select(&mut dice[5]),
+            'a' => dice[0].select(),
+            'b' => dice[1].select(),
+            'c' => dice[2].select(),
+            'd' => dice[3].select(),
+            'e' => dice[4].select(),
+            'f' => dice[5].select(),
             'k' => {
                 data.score += score(dice, SELECTED);
                 keep_selected(dice, data);
-                draw_all(dice);
+                display_dice(dice);
                 update_status_window(dice, data, ui, TURN_STATUS);
                 update_status_window(dice, data, ui, SELECTED);
                 update_status_window(dice, data, ui, ACTIVE);
@@ -133,82 +188,10 @@ fn count_values(dice: &mut Vec<Die>, set: u8) -> Vec<usize> {
     counts
 }
 
-fn display_boundary(die: &Die, label_color: String) {
-    let frm = i_o::Frame {
-        title: format!("{}", die.label),
-        title_color: label_color,
-        x: 5 + die.position * 12,
-        y: 6,
-        w: 9,
-        h: 4,
-    };
-
-    frm.display();
-}
-
-fn display_face(die: &Die) {
-    let x = 5 + die.position * 12;
-    let y: u16 = 6;
-    let mut row1 = String::from("");
-    let mut row2 = String::from("");
-    let mut row3 = String::from("");
-
-    if die.value == 1 {
-        row1 = String::from("       ");
-        row2 = String::from("   *   ");
-        row3 = String::from("       ");
-    }
-    if die.value == 2 {
-        row1 = String::from("     * ");
-        row2 = String::from("       ");
-        row3 = String::from(" *     ");
-    }
-    if die.value == 3 {
-        row1 = String::from("     * ");
-        row2 = String::from("   *   ");
-        row3 = String::from(" *     ");
-    }
-    if die.value == 4 {
-        row1 = String::from(" *   * ");
-        row2 = String::from("       ");
-        row3 = String::from(" *   * ");
-    }
-    if die.value == 5 {
-        row1 = String::from(" *   * ");
-        row2 = String::from("   *   ");
-        row3 = String::from(" *   * ");
-    }
-    if die.value == 6 {
-        row1 = String::from(" *   * ");
-        row2 = String::from(" *   * ");
-        row3 = String::from(" *   * ");
-    }
-
-    i_o::cmove(x + 1, y + 1);
-    print!("{}", row1);
-    i_o::cmove(x + 1, y + 2);
-    print!("{}", row2);
-    i_o::cmove(x + 1, y + 3);
-    print!("{}", row3);
-}
-
-fn draw_all(dice: &mut Vec<Die>) {
+fn display_dice(dice: &mut Vec<Die>) {
     for i in 0..dice.len() {
-        draw_single(&dice[i]);
+        dice[i].display_die();
     }
-}
-
-fn draw_single(die: &Die) {
-    if die.active == true {
-        if die.selected == true {
-            display_boundary(&die, "blue".to_string());
-        } else {
-            display_boundary(&die, "green".to_string());
-        }
-    } else {
-        display_boundary(&die, "red".to_string());
-    }
-    display_face(&die);
 }
 
 fn farkle() {
@@ -318,7 +301,7 @@ fn roll_unselected(dice: &mut Vec<Die>, data: &mut Data) {
     for i in 0..dice.len() {
         if dice[i].active == true && dice[i].selected == false {
             dice[i].value = rng.gen_range(1, 7);
-            draw_single(&dice[i]);
+            dice[i].display_die();
         }
     }
     data.roll_count += 1;
@@ -326,17 +309,6 @@ fn roll_unselected(dice: &mut Vec<Die>, data: &mut Data) {
     if score(dice, ACTIVE) == 0 {
         farkle();
         process::exit(1);
-    }
-}
-
-fn select(die: &mut Die) {
-    if die.active == true {
-        if die.selected == false {
-            die.selected = true;
-        } else {
-            die.selected = false;
-        }
-        draw_single(&die);
     }
 }
 
