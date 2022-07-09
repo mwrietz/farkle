@@ -2,6 +2,9 @@ use colored::Colorize;
 use rand::Rng;
 use std::process;
 
+mod die;
+use crate::die::Die;
+
 // status windows
 const TURN_STATUS: u8 = 2;
 const ACTIVE: u8 = 3;
@@ -10,69 +13,6 @@ const SELECTED: u8 = 5;
 
 const WIDTH_STATUS: u16 = 33;
 const HEIGHT_STATUS: u16 = 5;
-
-struct Die {
-    value: u16,
-    label: String,
-    position: u16,
-    active: bool,
-    selected: bool,
-}
-
-impl Die {
-
-    fn display_boundary(&self) {
-        let mut label_color = String::from("");
-        if self.active == true { label_color = "green".to_string(); }
-        if self.active == false { label_color = "red".to_string(); }
-        if self.selected == true { label_color = "blue".to_string(); }
-        let frm = i_o::Frame {
-            title: format!("{}", self.label),
-            title_color: label_color,
-            x: 5 + self.position * 12,
-            y: 6,
-            w: 9,
-            h: 4,
-        };
-        frm.display();
-    }
-
-    fn display_face(&self) {
-        let x = 5 + self.position * 12;
-        let y: u16 = 6;
-        let mut rows = Vec::new(); 
-        if self.value == 1 { rows = vec!["       ", "   *   ", "       "]; }
-        if self.value == 2 { rows = vec!["     * ", "       ", " *     "]; }
-        if self.value == 3 { rows = vec!["     * ", "   *   ", " *     "]; }
-        if self.value == 4 { rows = vec![" *   * ", "       ", " *   * "]; }
-        if self.value == 5 { rows = vec![" *   * ", "   *   ", " *   * "]; }
-        if self.value == 6 { rows = vec![" *   * ", " *   * ", " *   * "]; }
-
-        let mut line_count = 1;
-        for i in 0..3 {
-            i_o::cmove(x + 1, y + line_count);
-            print!("{}", rows[i]);
-            line_count += 1;
-        }
-    }
-
-    fn display_die(&self) {
-        self.display_boundary();
-        self.display_face();
-    }
-
-    fn select(&mut self) {
-        if self.active == true {
-            if self.selected == false {
-                self.selected = true;
-            } else {
-                self.selected = false;
-            }
-            self.display_die();
-        }
-    }
-
-}
 
 struct Data {
     score: u16,
