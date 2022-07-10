@@ -56,6 +56,12 @@ impl Die {
 
     pub fn select(&mut self) {
         if self.active == true {
+            self.selected = !self.selected;
+            self.display_die();
+        }
+    }
+/*
+        if self.active == true {
             if self.selected == false {
                 self.selected = true;
             } else {
@@ -64,4 +70,5 @@ impl Die {
             self.display_die();
         }
     }
+*/
 }
