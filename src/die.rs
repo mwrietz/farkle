@@ -11,12 +11,17 @@ pub struct Die {
 }
 
 impl Die {
-
     pub fn display_boundary(&self) {
         let mut label_color = String::from("");
-        if self.active == true { label_color = "green".to_string(); }
-        if self.active == false { label_color = "red".to_string(); }
-        if self.selected == true { label_color = "blue".to_string(); }
+        if self.active == true {
+            label_color = "green".to_string();
+        }
+        if self.active == false {
+            label_color = "red".to_string();
+        }
+        if self.selected == true {
+            label_color = "blue".to_string();
+        }
         let frm = i_o::Frame {
             title: format!("{}", self.label),
             title_color: label_color,
@@ -31,13 +36,25 @@ impl Die {
     pub fn display_face(&self) {
         let x = 5 + self.position * 12;
         let y: u16 = 6;
-        let mut rows = Vec::new(); 
-        if self.value == 1 { rows = vec!["       ", "   *   ", "       "]; }
-        if self.value == 2 { rows = vec!["     * ", "       ", " *     "]; }
-        if self.value == 3 { rows = vec!["     * ", "   *   ", " *     "]; }
-        if self.value == 4 { rows = vec![" *   * ", "       ", " *   * "]; }
-        if self.value == 5 { rows = vec![" *   * ", "   *   ", " *   * "]; }
-        if self.value == 6 { rows = vec![" *   * ", " *   * ", " *   * "]; }
+        let mut rows = Vec::new();
+        if self.value == 1 {
+            rows = vec!["       ", "   *   ", "       "];
+        }
+        if self.value == 2 {
+            rows = vec!["     * ", "       ", " *     "];
+        }
+        if self.value == 3 {
+            rows = vec!["     * ", "   *   ", " *     "];
+        }
+        if self.value == 4 {
+            rows = vec![" *   * ", "       ", " *   * "];
+        }
+        if self.value == 5 {
+            rows = vec![" *   * ", "   *   ", " *   * "];
+        }
+        if self.value == 6 {
+            rows = vec![" *   * ", " *   * ", " *   * "];
+        }
 
         let mut line_count = 1;
         for i in 0..3 {
@@ -62,5 +79,4 @@ impl Die {
             self.display_die();
         }
     }
-
 }

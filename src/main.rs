@@ -11,9 +11,6 @@ const ACTIVE: u8 = 3;
 const INACTIVE: u8 = 4;
 const SELECTED: u8 = 5;
 
-const WIDTH_STATUS: u16 = 33;
-const HEIGHT_STATUS: u16 = 5;
-
 struct Data {
     score: u16,
     roll_count: u16,
@@ -359,39 +356,16 @@ fn update_status_window(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Fram
             y += 1;
         }
 
-        // six of a kind
-        let mut freq = counts.iter().filter(|&n| *n == 6).count();
-        if freq == 1 {
-            i_o::cmove(x, y);
-            print!("six of a kind");
-            y += 1;
-        }
-        // five of a kind
-        freq = counts.iter().filter(|&n| *n == 5).count();
-        if freq == 1 {
-            i_o::cmove(x, y);
-            print!("five of a kind");
-            y += 1;
-        }
-        // four of a kind
-        freq = counts.iter().filter(|&n| *n == 4).count();
-        if freq == 1 {
-            i_o::cmove(x, y);
-            print!("four of a kind");
-            y += 1;
-        }
-        // triplets
-        freq = counts.iter().filter(|&n| *n == 3).count();
-        if freq > 0 {
-            i_o::cmove(x, y);
-            print!("triplets: {}", freq);
-            y += 1;
-        }
-        // pairs
-        freq = counts.iter().filter(|&n| *n == 2).count();
-        if freq > 0 {
-            i_o::cmove(x, y);
-            print!("pairs: {}", freq);
+        let labels: Vec<&str> = vec!["six of a kind", "five of a kind", "four of a kind", "triplets", "pairs"];
+        let values: Vec<usize> = vec![6, 5, 4, 3, 2];
+
+        for i in 0..labels.len() {
+            let freq = counts.iter().filter(|&n| *n == values[i]).count();
+            if freq > 0 {
+                i_o::cmove(x, y);
+                print!("{}: {}", labels[i], freq);
+                y += 1;
+            }
         }
     }
 }
@@ -403,60 +377,29 @@ fn ui_display(ui: &Vec<i_o::Frame>) {
 }
 
 fn ui_setup(ui: &mut Vec<i_o::Frame>) {
-    // DICE: 0
-    ui.push(i_o::Frame {
-        title: "DICE".to_string(),
-        title_color: "white".to_string(),
-        x: 2,
-        y: 4,
-        w: 75,
-        h: 7,
-    });
-    // MAIN_STATUS: 1
-    ui.push(i_o::Frame {
-        title: "STATUS".to_string(),
-        title_color: "white".to_string(),
-        x: 2,
-        y: 13,
-        w: 75,
-        h: 14,
-    });
-    // TURN_STATUS: 2
-    ui.push(i_o::Frame {
-        title: "Turn Status".to_string(),
-        title_color: "white".to_string(),
-        x: 5,
-        y: 15,
-        w: WIDTH_STATUS,
-        h: HEIGHT_STATUS,
-    });
-    // ACTIVE: 3
-    ui.push(i_o::Frame {
-        title: "Active Dice".to_string(),
-        title_color: "green".to_string(),
-        x: 5,
-        y: 21,
-        w: WIDTH_STATUS,
-        h: HEIGHT_STATUS,
-    });
-    // INACTIVE: 4
-    ui.push(i_o::Frame {
-        title: "Inactive (Scored) Dice".to_string(),
-        title_color: "red".to_string(),
-        x: 41,
-        y: 21,
-        w: WIDTH_STATUS,
-        h: HEIGHT_STATUS,
-    });
-    // SELECTED: 5
-    ui.push(i_o::Frame {
-        title: "Selected Dice".to_string(),
-        title_color: "blue".to_string(),
-        x: 41,
-        y: 15,
-        w: WIDTH_STATUS,
-        h: HEIGHT_STATUS,
-    });
+    let title = vec![
+        "DICE",
+        "STATUS",
+        "Turn Status",
+        "Active Dice",
+        "Inactive (Scored) Dice",
+        "Selected Dice",
+    ];
+    let title_color = vec!["white", "white", "white", "green", "red", "blue"];
+    let x = vec![2, 2, 5, 5, 41, 41];
+    let y = vec![4, 13, 15, 21, 21, 15];
+    let w = vec![75, 75, 33, 33, 33, 33];
+    let h = vec![7, 14, 5, 5, 5, 5];
+    for i in 0..6 {
+        ui.push(i_o::Frame {
+            title: title[i].to_string(),
+            title_color: title_color[i].to_string(),
+            x: x[i],
+            y: y[i],
+            w: w[i],
+            h: h[i],
+        });
+    }
 }
 
 fn usage() {
