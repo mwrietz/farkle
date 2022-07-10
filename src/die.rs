@@ -1,7 +1,3 @@
-//use colored::Colorize;
-//use rand::Rng;
-//use std::process;
-
 pub struct Die {
     pub value: u16,
     pub label: String,
@@ -37,29 +33,18 @@ impl Die {
         let x = 5 + self.position * 12;
         let y: u16 = 6;
         let mut rows = Vec::new();
-        if self.value == 1 {
-            rows = vec!["       ", "   *   ", "       "];
-        }
-        if self.value == 2 {
-            rows = vec!["     * ", "       ", " *     "];
-        }
-        if self.value == 3 {
-            rows = vec!["     * ", "   *   ", " *     "];
-        }
-        if self.value == 4 {
-            rows = vec![" *   * ", "       ", " *   * "];
-        }
-        if self.value == 5 {
-            rows = vec![" *   * ", "   *   ", " *   * "];
-        }
-        if self.value == 6 {
-            rows = vec![" *   * ", " *   * ", " *   * "];
-        }
+
+        rows.push(vec!["       ", "   *   ", "       "]);
+        rows.push(vec!["     * ", "       ", " *     "]);
+        rows.push(vec!["     * ", "   *   ", " *     "]);
+        rows.push(vec![" *   * ", "       ", " *   * "]);
+        rows.push(vec![" *   * ", "   *   ", " *   * "]);
+        rows.push(vec![" *   * ", " *   * ", " *   * "]);
 
         let mut line_count = 1;
         for i in 0..3 {
             i_o::cmove(x + 1, y + line_count);
-            print!("{}", rows[i]);
+            print!("{}", rows[self.value as usize - 1][i]);
             line_count += 1;
         }
     }
