@@ -10,13 +10,15 @@ impl Die {
     pub fn display_boundary(&self) {
         let mut label_color = String::from("");
         if self.active == true {
-            label_color = "green".to_string();
+            if self.selected == true {
+                label_color = "blue".to_string();
+            }
+            else {
+                label_color = "green".to_string();
+            }
         }
-        if self.active == false {
+        else {
             label_color = "red".to_string();
-        }
-        if self.selected == true {
-            label_color = "blue".to_string();
         }
         let frm = i_o::Frame {
             title: format!("{}", self.label),
