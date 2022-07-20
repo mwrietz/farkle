@@ -136,9 +136,9 @@ fn farkle() {
 
     let frm = i_o::Frame {
         title: format!("{}", ""),
-        title_color: "red".to_string(),
+        title_color: "yellow".to_string(),
         x: 3,
-        y: 18,
+        y: 11,
         w: 73,
         h: 3,
     };
@@ -148,12 +148,12 @@ fn farkle() {
     i_o::cmove(frm.x + 1, frm.y + 1);
     print!(
         "                    {}",
-        "* * *  F A R K L E !  * * *".bold().red()
+        "* * *  F A R K L E !  * * *".bold().yellow()
     );
     i_o::cmove(frm.x + 1, frm.y + 2);
     print!(
         "                    {}",
-        "* * *  S c o r e = 0  * * *".bold().red()
+        "* * *  S c o r e = 0  * * *".bold().yellow()
     );
 
     // move to bottom of screen and clear menu
