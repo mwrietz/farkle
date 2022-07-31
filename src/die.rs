@@ -24,7 +24,7 @@ impl Die {
             title: format!("{}", self.label),
             title_color: label_color,
             x: 5 + self.position * 12,
-            y: 6,
+            y: 5,
             w: 9,
             h: 4,
         };
@@ -33,7 +33,7 @@ impl Die {
 
     pub fn display_face(&self) {
         let x = 5 + self.position * 12;
-        let y: u16 = 6;
+        let y: u16 = 5;
         let mut rows = Vec::new();
 
         rows.push(vec!["       ", "   *   ", "       "]);

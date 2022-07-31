@@ -1,6 +1,7 @@
 use colored::Colorize;
 use rand::Rng;
 use std::process;
+use std::env;
 
 mod die;
 use crate::die::Die;
@@ -18,7 +19,7 @@ struct Data {
 
 fn main() {
     i_o::cls();
-    i_o::print_title_blue("Farkle");
+    i_o::print_title_blue(format!("Farkle (v{})", env!("CARGO_PKG_VERSION")).as_str());
 
     let mut ui = Vec::new();
     ui_setup(&mut ui);
@@ -321,12 +322,31 @@ fn update_status_window(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Fram
     let counts = count_values(dice, set);
 
     // clear status window
+/*
     for _ in 0..4 {
         i_o::cmove(x, y);
         print!("                      ");
         y += 1;
     }
     y -= 4;
+*/
+
+    if set == TURN_STATUS || set == INACTIVE {
+        for _ in 0..2 {
+            i_o::cmove(x, y);
+            print!("                      ");
+            y += 1;
+        }
+        y -= 2;
+    } else {
+        for _ in 0..4 {
+            i_o::cmove(x, y);
+            print!("                      ");
+            y += 1;
+        }
+        y -= 4;
+    }
+
 
     if set == TURN_STATUS {
         i_o::cmove(x, y);
@@ -385,11 +405,11 @@ fn ui_setup(ui: &mut Vec<i_o::Frame>) {
         "Inactive (Scored) Dice",
         "Selected Dice",
     ];
-    let title_color = vec!["white", "white", "white", "green", "red", "blue"];
+    let title_color = vec!["white", "white", "red", "green", "red", "blue"];
     let x = vec![2, 2, 5, 5, 41, 41];
-    let y = vec![4, 13, 15, 21, 21, 15];
+    let y = vec![4, 12, 19, 13, 19, 13];
     let w = vec![75, 75, 33, 33, 33, 33];
-    let h = vec![7, 14, 5, 5, 5, 5];
+    let h = vec![6, 11, 3, 5, 3, 5];
     for i in 0..6 {
         ui.push(i_o::Frame {
             title: title[i].to_string(),
