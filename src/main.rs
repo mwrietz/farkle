@@ -4,7 +4,11 @@ use std::process;
 use std::env;
 
 mod die;
-use crate::die::Die;
+//use crate::die::Die;
+mod tui_gen;
+//use crate::tui_gen::cmove;
+mod tui_frm;
+mod tui_menu;
 
 // status windows
 const TURN_STATUS: u8 = 2;
@@ -18,8 +22,8 @@ struct Data {
 }
 
 fn main() {
-    i_o::cls();
-    i_o::print_title_blue(format!("Farkle (v{})", env!("CARGO_PKG_VERSION")).as_str());
+    tui_gen::cls();
+    tui_gen::print_title(format!("Farkle (v{})", env!("CARGO_PKG_VERSION")).as_str(), "blue");
 
     let mut ui = Vec::new();
     ui_setup(&mut ui);
@@ -42,7 +46,7 @@ fn main() {
     menu(&mut dice, &mut data, &ui);
 }
 
-fn menu(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Frame>) {
+fn menu(dice: &mut Vec<die::Die>, data: &mut Data, ui: &Vec<tui_frm::Frame>) {
     data.score = 0;
     data.roll_count = 1;
     loop {
@@ -51,7 +55,7 @@ fn menu(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Frame>) {
         ];
         let keys = vec!["a", "b", "c", "d", "e", "f", "k", "r", "q"];
 
-        let selection = i_o::menu_horiz_blue(&keys, &menu_items);
+        let selection = tui_menu::menu_horiz(&keys, &menu_items);
 
         match selection {
             'a' => dice[0].select(),
@@ -83,7 +87,7 @@ fn menu(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Frame>) {
     }
 }
 
-fn count_dice(dice: &mut Vec<Die>, set: u8) -> u16 {
+fn count_dice(dice: &mut Vec<die::Die>, set: u8) -> u16 {
     let mut count: u16 = 0;
     if set == INACTIVE {
         for i in 0..dice.len() {
@@ -95,7 +99,7 @@ fn count_dice(dice: &mut Vec<Die>, set: u8) -> u16 {
     count
 }
 
-fn count_values(dice: &mut Vec<Die>, set: u8) -> Vec<usize> {
+fn count_values(dice: &mut Vec<die::Die>, set: u8) -> Vec<usize> {
     let mut counts = vec![0, 0, 0, 0, 0, 0, 0];
     for j in 1..7 {
         for i in 0..dice.len() {
@@ -126,18 +130,19 @@ fn count_values(dice: &mut Vec<Die>, set: u8) -> Vec<usize> {
     counts
 }
 
-fn display_dice(dice: &mut Vec<Die>) {
+fn display_dice(dice: &mut Vec<die::Die>) {
     for i in 0..dice.len() {
         dice[i].display_die();
     }
 }
 
 fn farkle() {
-    let (_width, height) = i_o::tsize();
+    let (_width, height) = tui_gen::tsize();
 
-    let frm = i_o::Frame {
-        title: format!("{}", ""),
-        title_color: "yellow".to_string(),
+    let frm = tui_frm::Frame {
+        title: "",
+        title_color: "yellow",
+        frame_color: "red",
         x: 3,
         y: 11,
         w: 73,
@@ -146,32 +151,33 @@ fn farkle() {
 
     frm.display();
 
-    i_o::cmove(frm.x + 1, frm.y + 1);
+    tui_gen::cmove(frm.x + 1, frm.y + 1);
     print!(
         "                    {}",
-        "* * *  F A R K L E !  * * *".bold().yellow()
+        "* * *  F A R K L E !  * * *".bold().red()
     );
-    i_o::cmove(frm.x + 1, frm.y + 2);
+    tui_gen::cmove(frm.x + 1, frm.y + 2);
     print!(
         "                    {}",
-        "* * *  S c o r e = 0  * * *".bold().yellow()
+        "* * *  S c o r e = 0  * * *".bold().red()
     );
 
     // move to bottom of screen and clear menu
-    i_o::cmove(0, height - 1);
+    tui_gen::cmove(0, height - 1);
     print!("                                                                                ");
-    i_o::cmove(0, height - 2);
+    tui_gen::cmove(0, height - 2);
 }
 
-fn initial_roll(dice: &mut Vec<Die>, data: &mut Data) {
+fn initial_roll(dice: &mut Vec<die::Die>, data: &mut Data) {
     // setup dice
     let mut rng = rand::thread_rng();
     let n_dice = 6;
+    let lbl_v = vec!["a", "b", "c", "d", "e", "f"];
     for d in 0..n_dice {
-        let lbl = format!("{:?}", ((d as u8) + 97) as char);
-        let instance = Die {
+        //lbl = format!("{:?}", ((d as u8) + 97) as char);
+        let instance = die::Die {
             value: rng.gen_range(1, 7),
-            label: lbl,
+            label: lbl_v[d],
             position: d,
             active: true,
             selected: false,
@@ -184,14 +190,14 @@ fn initial_roll(dice: &mut Vec<Die>, data: &mut Data) {
 
     // update position
     for i in 0..dice.len() {
-        dice[i].position = i as u16;
-        dice[i].label = format!("{:?}", ((i as u8) + 97) as char);
+        dice[i].position = i as usize;
+        dice[i].label = lbl_v[i];
     }
 
     roll_unselected(dice, data);
 }
 
-fn keep_selected(dice: &mut Vec<Die>, data: &mut Data) {
+fn keep_selected(dice: &mut Vec<die::Die>, data: &mut Data) {
     // make selected inactive
     for i in 0..dice.len() {
         if dice[i].selected == true {
@@ -234,7 +240,7 @@ fn print_count(counts: &Vec<usize>) {
     print!("{}]", counts[counts.len() - 1]);
 }
 
-fn roll_unselected(dice: &mut Vec<Die>, data: &mut Data) {
+fn roll_unselected(dice: &mut Vec<die::Die>, data: &mut Data) {
     let mut rng = rand::thread_rng();
     for i in 0..dice.len() {
         if dice[i].active == true && dice[i].selected == false {
@@ -250,7 +256,7 @@ fn roll_unselected(dice: &mut Vec<Die>, data: &mut Data) {
     }
 }
 
-fn score(dice: &mut Vec<Die>, set: u8) -> u16 {
+fn score(dice: &mut Vec<die::Die>, set: u8) -> u16 {
     let counts = count_values(dice, set);
     let mut score = 0;
     let _sextet = 0;
@@ -316,7 +322,7 @@ fn score(dice: &mut Vec<Die>, set: u8) -> u16 {
     score as u16
 }
 
-fn update_status_window(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Frame>, set: u8) {
+fn update_status_window(dice: &mut Vec<die::Die>, data: &mut Data, ui: &Vec<tui_frm::Frame>, set: u8) {
     let x = ui[set as usize].x + 2;
     let mut y = ui[set as usize].y + 1;
     let counts = count_values(dice, set);
@@ -333,14 +339,14 @@ fn update_status_window(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Fram
 
     if set == TURN_STATUS || set == INACTIVE {
         for _ in 0..2 {
-            i_o::cmove(x, y);
+            tui_gen::cmove(x, y);
             print!("                      ");
             y += 1;
         }
         y -= 2;
     } else {
         for _ in 0..4 {
-            i_o::cmove(x, y);
+            tui_gen::cmove(x, y);
             print!("                      ");
             y += 1;
         }
@@ -349,29 +355,29 @@ fn update_status_window(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Fram
 
 
     if set == TURN_STATUS {
-        i_o::cmove(x, y);
+        tui_gen::cmove(x, y);
         print!("rolls: {}    ", data.roll_count);
     }
 
     if set == SELECTED || set == ACTIVE || set == INACTIVE {
-        i_o::cmove(x, y);
+        tui_gen::cmove(x, y);
         print_count(&counts);
         y += 1;
     }
 
     if set == INACTIVE {
-        i_o::cmove(x, y);
+        tui_gen::cmove(x, y);
         print!("score: {}    ", data.score);
     }
 
     if set == SELECTED || set == ACTIVE {
         if set == SELECTED {
-            i_o::cmove(x, y);
+            tui_gen::cmove(x, y);
             print!("selected score: {}    ", score(dice, set));
             y += 1;
         }
         if set == ACTIVE {
-            i_o::cmove(x, y);
+            tui_gen::cmove(x, y);
             print!("tentative score: {}    ", score(dice, set));
             y += 1;
         }
@@ -382,7 +388,7 @@ fn update_status_window(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Fram
         for i in 0..labels.len() {
             let freq = counts.iter().filter(|&n| *n == values[i]).count();
             if freq > 0 {
-                i_o::cmove(x, y);
+                tui_gen::cmove(x, y);
                 print!("{}: {}", labels[i], freq);
                 y += 1;
             }
@@ -390,13 +396,13 @@ fn update_status_window(dice: &mut Vec<Die>, data: &mut Data, ui: &Vec<i_o::Fram
     }
 }
 
-fn ui_display(ui: &Vec<i_o::Frame>) {
+fn ui_display(ui: &Vec<tui_frm::Frame>) {
     for i in 0..ui.len() {
         ui[i].display();
     }
 }
 
-fn ui_setup(ui: &mut Vec<i_o::Frame>) {
+fn ui_setup(ui: &mut Vec<tui_frm::Frame>) {
     let title = vec![
         "DICE",
         "STATUS",
@@ -411,9 +417,10 @@ fn ui_setup(ui: &mut Vec<i_o::Frame>) {
     let w = vec![75, 75, 33, 33, 33, 33];
     let h = vec![6, 11, 3, 5, 3, 5];
     for i in 0..6 {
-        ui.push(i_o::Frame {
-            title: title[i].to_string(),
-            title_color: title_color[i].to_string(),
+        ui.push(tui_frm::Frame {
+            title: title[i],
+            title_color: title_color[i],
+            frame_color: "white",
             x: x[i],
             y: y[i],
             w: w[i],
@@ -423,6 +430,6 @@ fn ui_setup(ui: &mut Vec<i_o::Frame>) {
 }
 
 fn usage() {
-    i_o::cls();
+    tui_gen::cls();
     process::exit(1);
 }

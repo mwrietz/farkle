@@ -1,12 +1,13 @@
 [package]
 name = "farkle"
-version = "0.2.7"
+version = "0.2.8"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-crossterm = "0.23.2"
+chrono = "0.4"
 colored = "2"
+crossterm = "0.23.2"
 rand = "0.7.3"
-i_o = { path = "../i_o" }
+getch = "0.3.1"
