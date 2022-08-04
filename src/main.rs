@@ -23,7 +23,7 @@ struct Data {
 
 fn main() {
     tui_gen::cls();
-    tui_gen::print_title(format!("Farkle (v{})", env!("CARGO_PKG_VERSION")).as_str(), "blue");
+    tui_gen::print_title(format!("F a r k l e - v{}", env!("CARGO_PKG_VERSION")).as_str(), "blue");
 
     let mut ui = Vec::new();
     ui_setup(&mut ui);
@@ -143,9 +143,9 @@ fn farkle() {
         title: "",
         title_color: "yellow",
         frame_color: "red",
-        x: 3,
+        x: 15,
         y: 11,
-        w: 73,
+        w: 49,
         h: 3,
     };
 
@@ -153,12 +153,12 @@ fn farkle() {
 
     tui_gen::cmove(frm.x + 1, frm.y + 1);
     print!(
-        "                    {}",
+        "          {}",
         "* * *  F A R K L E !  * * *".bold().red()
     );
     tui_gen::cmove(frm.x + 1, frm.y + 2);
     print!(
-        "                    {}",
+        "          {}",
         "* * *  S c o r e = 0  * * *".bold().red()
     );
 

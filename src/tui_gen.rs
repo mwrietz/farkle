@@ -39,11 +39,14 @@ pub fn pause() {
 #[allow(dead_code)]
 pub fn print_title(title_string: &str, color: &str) {
     println!("");
+    println!("{}", title_string.color(color).bold());
+    /*
     for c in title_string.chars() {
         print!("{}", " ");
         print!("{}", c.to_string().color(color).bold());
     }
-    println!("");
+    */
+    //println!("");
     horiz_line(color);
     println!("");
 }
