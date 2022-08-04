@@ -26,7 +26,7 @@ impl Die<'_> {
         let frm = Frame {
             title: self.label,
             title_color: label_color,
-            frame_color: "yellow",
+            frame_color: label_color,
             x: 5 + self.position * 12,
             y: 5,
             w: 9,
