@@ -35,16 +35,6 @@ pub fn menu(menu_title: &str, items: &Vec<&str>) -> u8 {
     _a - 48
 }
 
-// menu_horiz - example use
-//
-// let keys = vec!["a", "r", "e", "d", "s", "m", "q"];
-// let menu_items = vec!["Add", "Remove", "Edit", "Details", "Summary", "Menu", "Quit"];
-// let val = menu_horiz(keys, menu_items);
-
-//
-// add color argument
-//
-
 #[allow(dead_code)]
 pub fn menu_horiz(keys: &Vec<&str>, items: &Vec<&str>) -> char {
     let (_width, height) = tsize();

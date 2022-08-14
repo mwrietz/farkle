@@ -70,6 +70,7 @@ pub struct MsgFrame<'a> {
 }
 
 impl MsgFrame<'_> {
+    #[allow(dead_code)]
     pub fn display_msg(&self) {
         for i in 0..self.msg.len() {
             if self.msg.len() > (self.frame.h - 1) {

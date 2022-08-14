@@ -4,11 +4,10 @@ use std::process;
 use std::env;
 
 mod die;
-//use crate::die::Die;
 mod tui_gen;
-//use crate::tui_gen::cmove;
 mod tui_frm;
 mod tui_menu;
+mod gh_repo_status;
 
 // status windows
 const TURN_STATUS: u8 = 2;
@@ -79,7 +78,7 @@ fn menu(dice: &mut Vec<die::Die>, data: &mut Data, ui: &Vec<tui_frm::Frame>) {
                 update_status_window(dice, data, ui, ACTIVE);
             }
             'q' => {
-                process::exit(1);
+                quit();
             }
             _ => usage(),
         }
@@ -240,6 +239,12 @@ fn print_count(counts: &Vec<usize>) {
     print!("{}]", counts[counts.len() - 1]);
 }
 
+fn quit() {
+    gh_repo_status::check_version()
+        .expect("check_version error");
+    process::exit(1);
+}
+
 fn roll_unselected(dice: &mut Vec<die::Die>, data: &mut Data) {
     let mut rng = rand::thread_rng();
     for i in 0..dice.len() {
@@ -252,7 +257,7 @@ fn roll_unselected(dice: &mut Vec<die::Die>, data: &mut Data) {
 
     if score(dice, ACTIVE) == 0 {
         farkle();
-        process::exit(1);
+        quit();
     }
 }
 
@@ -327,16 +332,6 @@ fn update_status_window(dice: &mut Vec<die::Die>, data: &mut Data, ui: &Vec<tui_
     let mut y = ui[set as usize].y + 1;
     let counts = count_values(dice, set);
 
-    // clear status window
-/*
-    for _ in 0..4 {
-        i_o::cmove(x, y);
-        print!("                      ");
-        y += 1;
-    }
-    y -= 4;
-*/
-
     if set == TURN_STATUS || set == INACTIVE {
         for _ in 0..2 {
             tui_gen::cmove(x, y);
@@ -352,24 +347,19 @@ fn update_status_window(dice: &mut Vec<die::Die>, data: &mut Data, ui: &Vec<tui_
         }
         y -= 4;
     }
-
-
     if set == TURN_STATUS {
         tui_gen::cmove(x, y);
         print!("rolls: {}    ", data.roll_count);
     }
-
     if set == SELECTED || set == ACTIVE || set == INACTIVE {
         tui_gen::cmove(x, y);
         print_count(&counts);
         y += 1;
     }
-
     if set == INACTIVE {
         tui_gen::cmove(x, y);
         print!("score: {}    ", data.score);
     }
-
     if set == SELECTED || set == ACTIVE {
         if set == SELECTED {
             tui_gen::cmove(x, y);
@@ -431,5 +421,5 @@ fn ui_setup(ui: &mut Vec<tui_frm::Frame>) {
 
 fn usage() {
     tui_gen::cls();
-    process::exit(1);
+    quit();
 }

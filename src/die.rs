@@ -11,22 +11,22 @@ pub struct Die<'a> {
 
 impl Die<'_> {
     pub fn display_boundary(&self) {
-        let mut label_color = "";
+        let mut _label_color = "";
         if self.active == true {
             if self.selected == true {
-                label_color = "blue";
+                _label_color = "blue";
             }
             else {
-                label_color = "green";
+                _label_color = "green";
             }
         }
         else {
-            label_color = "red";
+            _label_color = "red";
         }
         let frm = Frame {
             title: self.label,
-            title_color: label_color,
-            frame_color: label_color,
+            title_color: _label_color,
+            frame_color: _label_color,
             x: 5 + self.position * 12,
             y: 5,
             w: 9,
