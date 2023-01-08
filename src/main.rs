@@ -398,11 +398,12 @@ fn ui_setup(ui: &mut Vec<tui_frm::Frame>) {
         "STATUS",
         "Turn Status",
         "Active Dice",
-        "Inactive (Scored) Dice",
+        "Banked Dice (Inactive)",
         "Selected Dice",
     ];
-    let title_color = vec!["white", "white", "red", "green", "red", "blue"];
-    let x = vec![2, 2, 5, 5, 41, 41];
+    let title_color = vec!["white", "white", "yellow", "green", "red", "blue"];
+    let frame_color = vec!["white", "white", "yellow", "green", "red", "blue"];
+    let x = vec![2, 2, 41, 5, 5, 41];
     let y = vec![4, 12, 19, 13, 19, 13];
     let w = vec![75, 75, 33, 33, 33, 33];
     let h = vec![6, 11, 3, 5, 3, 5];
@@ -410,7 +411,7 @@ fn ui_setup(ui: &mut Vec<tui_frm::Frame>) {
         ui.push(tui_frm::Frame {
             title: title[i],
             title_color: title_color[i],
-            frame_color: "white",
+            frame_color: frame_color[i],
             x: x[i],
             y: y[i],
             w: w[i],
