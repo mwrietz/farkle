@@ -2,4 +2,4 @@ Farkle
 
 Play Farkle in your terminal.
 
-<img src="img/Screenshot.png" width="400">
+<img src="img/Screenshot.png" width="600">
