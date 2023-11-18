@@ -1,5 +1,5 @@
-use crate::tui_gen::cmove;
 use crate::tui_frm::Frame;
+use crate::tui_gen::cmove;
 
 pub struct Die<'a> {
     pub value: usize,
@@ -15,12 +15,10 @@ impl Die<'_> {
         if self.active == true {
             if self.selected == true {
                 _label_color = "blue";
-            }
-            else {
+            } else {
                 _label_color = "green";
             }
-        }
-        else {
+        } else {
             _label_color = "red";
         }
         let frm = Frame {

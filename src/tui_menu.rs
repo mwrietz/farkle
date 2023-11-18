@@ -4,8 +4,8 @@ use getch::Getch;
 use std::io;
 use std::io::{stdout, Write};
 
-use crate::tui_gen::horiz_line;
 use crate::tui_gen::cmove;
+use crate::tui_gen::horiz_line;
 use crate::tui_gen::tsize;
 
 #[allow(dead_code)]

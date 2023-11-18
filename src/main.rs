@@ -1,13 +1,13 @@
 use colored::Colorize;
 use rand::Rng;
-use std::process;
 use std::env;
+use std::process;
 
 mod die;
-mod tui_gen;
-mod tui_frm;
-mod tui_menu;
 mod gh_repo_status;
+mod tui_frm;
+mod tui_gen;
+mod tui_menu;
 
 // status windows
 const TURN_STATUS: u8 = 2;
@@ -22,7 +22,10 @@ struct Data {
 
 fn main() {
     tui_gen::cls();
-    tui_gen::print_title(format!("F a r k l e - v{}", env!("CARGO_PKG_VERSION")).as_str(), "blue");
+    tui_gen::print_title(
+        format!("F a r k l e - v{}", env!("CARGO_PKG_VERSION")).as_str(),
+        "blue",
+    );
 
     let mut ui = Vec::new();
     ui_setup(&mut ui);
@@ -151,15 +154,9 @@ fn farkle() {
     frm.display();
 
     tui_gen::cmove(frm.x + 1, frm.y + 1);
-    print!(
-        "          {}",
-        "* * *  F A R K L E !  * * *".bold().red()
-    );
+    print!("          {}", "* * *  F A R K L E !  * * *".bold().red());
     tui_gen::cmove(frm.x + 1, frm.y + 2);
-    print!(
-        "          {}",
-        "* * *  S c o r e = 0  * * *".bold().red()
-    );
+    print!("          {}", "* * *  S c o r e = 0  * * *".bold().red());
 
     // move to bottom of screen and clear menu
     tui_gen::cmove(0, height - 1);
@@ -240,8 +237,7 @@ fn print_count(counts: &Vec<usize>) {
 }
 
 fn quit() {
-    gh_repo_status::check_version()
-        .expect("check_version error");
+    gh_repo_status::check_version().expect("check_version error");
     process::exit(1);
 }
 
@@ -327,7 +323,12 @@ fn score(dice: &mut Vec<die::Die>, set: u8) -> u16 {
     score as u16
 }
 
-fn update_status_window(dice: &mut Vec<die::Die>, data: &mut Data, ui: &Vec<tui_frm::Frame>, set: u8) {
+fn update_status_window(
+    dice: &mut Vec<die::Die>,
+    data: &mut Data,
+    ui: &Vec<tui_frm::Frame>,
+    set: u8,
+) {
     let x = ui[set as usize].x + 2;
     let mut y = ui[set as usize].y + 1;
     let counts = count_values(dice, set);
@@ -372,7 +373,13 @@ fn update_status_window(dice: &mut Vec<die::Die>, data: &mut Data, ui: &Vec<tui_
             y += 1;
         }
 
-        let labels: Vec<&str> = vec!["six of a kind", "five of a kind", "four of a kind", "triplets", "pairs"];
+        let labels: Vec<&str> = vec![
+            "six of a kind",
+            "five of a kind",
+            "four of a kind",
+            "triplets",
+            "pairs",
+        ];
         let values: Vec<usize> = vec![6, 5, 4, 3, 2];
 
         for i in 0..labels.len() {

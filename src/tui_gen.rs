@@ -27,12 +27,12 @@ pub fn pause() {
     let clear_message = "                            ";
     let message = "Press any key to continue...".blue();
     let message_len: usize = message.len();
-    cmove((w - message_len)/2, h - 2);
+    cmove((w - message_len) / 2, h - 2);
     print!("{}", message);
     std::io::stdout().flush().unwrap();
     let g = Getch::new();
     let _keypress = g.getch().unwrap();
-    cmove((w - message_len)/2, h - 2);
+    cmove((w - message_len) / 2, h - 2);
     print!("{}", clear_message);
 }
 
@@ -85,4 +85,3 @@ pub fn tsize() -> (usize, usize) {
     };
     (w as usize, h as usize)
 }
-
